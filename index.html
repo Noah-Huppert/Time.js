@@ -1,0 +1,247 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>Timer</title>
+		<link href='http://fonts.googleapis.com/css?family=Roboto+Condensed:400,700' rel='stylesheet' type='text/css'>
+		<script src="./js/jquery/jquery.min.js" type="text/javascript"></script>
+		
+		<style>
+			body{
+				margin: 0;
+				padding: 0;
+				background: #FEFEF8;
+			}
+			
+			#container{
+				width: 200px;
+				height: 150px;
+				margin: auto;
+				border-style: solid;
+				border-width: 1px;
+				border-color: #6BCCB4;
+				font-weight: 700;
+				font-family: 'Roboto Condensed';
+			}
+			
+			#time{
+				height: 100px;
+				line-height: 100px;
+				background: #65DBBE;
+				text-align: center;
+				font-size: 30px;
+				color: #415457;
+			}
+			
+			#miliSeconds{
+				font-size: 14px;
+			}
+			
+			#buttons{
+				margin: 0;
+				padding: 0;
+			}
+			
+			.button{
+				width: 50%;
+				height: 50px;
+				margin: 0;
+				background: #2ecc71;
+				border-style: none;
+				font-size: 19px;
+				font-family: 'Roboto Condensed';
+				color: #415457;
+				outline: none;
+			}
+			
+			.button:active{
+				font-weight: bolder;
+			}
+			
+			#start{
+				float: left;
+				background: #00F5A1;
+			}
+			
+			#reset{
+				float: right;
+				background: #00B1E1;
+			}
+		</style>
+	</head>
+	<body onload="init();">
+		<div id="container">
+			<div id="time">
+				<span id="hours">00</span>:<span id="minutes">00</span>:<span id="seconds">00</span><span id="miliSeconds">0000</span>
+			</div>
+			<div id="buttons">
+				<button class="button" id="start">Start</button>
+				<button class="button" id="reset">Reset</button>
+			</div>
+		</div>
+		
+		<script>
+				var hours = 0;
+				var minutes = 0;
+				var seconds = 0;
+				var miliseconds = 0;
+				
+				var tempHours = 0;
+				var tempMinutes = 0;
+				var tempSeconds = 0;
+				var tempMiliseconds = 0;
+				
+				var prevHours = [];
+				var prevMinutes = [];
+				var prevSeconds = [];
+				var prevMiliseconds = [];
+				
+				var startDate = new Date();
+				var currentDate = new Date();
+				
+				var miliDif = 0;
+				
+				var start = 0;
+				var now = 0;
+				
+				
+				console.log("To retrieve actidental time resets use 'prevHours', 'prevMinutes', 'prevSeconds', 'prevMiliseconds' to get times or run 'retrieveLast(reset#)' to reset timer back to that point");
+				
+				var intervalID;
+			function init(){
+				$('#container').css({
+					'margin-top' : ($(window).height() - 150) / 2
+				});
+			}
+			
+			$('#start').click(function(){
+				if($(this).text() == 'Start'){
+					startDate = new Date();
+					start = window.performance.now();
+					intervalID = setInterval(mainTimer, 50);
+					$(this).text('Stop');
+				} else{
+					$(this).text('Start');
+					tempHours = hours;
+					tempMinutes = minutes;
+					tempSeconds = seconds;
+					clearInterval(intervalID);
+				}
+			});
+			
+			$('#reset').click(function(){
+				//TIME TEST STARTED AT 10:57
+				prevHours.push(hours);
+				prevMinutes.push(minutes);
+				prevSeconds.push(seconds);
+				prevMiliseconds.push(miliseconds);
+				
+				hours = 0;
+				minutes = 0;
+				seconds = 0;
+				miliseconds = 0;
+				
+				tempHours = 0;
+				tempMinutes = 0;
+				tempSeconds = 0;
+				tempMiliseconds = 0;
+				
+				$('#miliSeconds').html(doubleNumber(miliseconds, true));
+				$('#seconds').html(doubleNumber(seconds));
+				$('#minutes').html(doubleNumber(minutes));
+				$('#hours').html(doubleNumber(hours));
+				
+				console.log("Time reset, to retrieve reset type 'retrieveLast(" + prevMiliseconds.length + ")'");
+			});
+			
+			function retrieveLast(resetNumber){
+				resetNumber = resetNumber - 1;
+				hours = prevHours[resetNumber];
+				minutes = prevMinutes[resetNumber];
+				seconds = prevSeconds[resetNumber];
+				miliseconds = prevMiliseconds[resetNumber];
+				
+				$('#miliSeconds').html(doubleNumber(miliseconds, true));
+				$('#seconds').html(doubleNumber(seconds));
+				$('#minutes').html(doubleNumber(minutes));
+				$('#hours').html(doubleNumber(hours));
+				resetNumber = resetNumber + 1;
+				console.log("Reset to reset Number " + resetNumber);
+			}
+			
+			function mainTimer(){
+				miliseconds =  Math.floor(window.performance.now() - start);
+				if(miliseconds >= 1000){
+					seconds = Math.floor(miliseconds / 1000);
+					miliseconds = miliseconds - (seconds * 1000);
+					if(seconds >= 60){
+						minutes = Math.floor(seconds / 60);
+						seconds = seconds - (minutes * 60);
+						if(minutes >= 60){
+							hours = Math.floor(minutes / 60);
+							minutes = minutes - (hours * 60);
+						}
+					}
+				}
+				
+				hours = hours + tempHours;
+				minutes = minutes + tempMinutes;
+				seconds = seconds + tempSeconds;
+				/*hours = currentDate.getHours() - startDate.getHours();
+				minutes = currentDate.getMinutes() - startDate.getMinutes();
+				if(currentDate.getSeconds() - startDate.getSeconds() < 0){
+					seconds = seconds + (startDate.getSeconds() - currentDate.getSeconds());
+				} else{
+					seconds = currentDate.getSeconds() - startDate.getSeconds();	
+				}*/
+				/*if(miliDif >= 1000){
+					miliseconds = 0;
+					if(seconds + 1 == 60){
+						seconds = miliseconds / 1000;
+						if(minutes + 1 == 60){
+							minutes = 0;
+							hours = hours + 1;
+						} else{
+							minutes = minutes + 1;	
+						}
+					} else{
+						seconds = seconds + 1;	
+					}
+				} else{
+					miliseconds = miliDif;	
+				}*/
+				
+				$('#miliSeconds').html(doubleNumber(miliseconds, true));
+				$('#seconds').html(doubleNumber(seconds));
+				$('#minutes').html(doubleNumber(minutes));
+				$('#hours').html(doubleNumber(hours));
+				
+				//prevDate = date;
+			}
+			
+			function doubleNumber(number, special){
+				if(number < 10 && special != true){
+					return "0" + number;
+				} 
+				if(number >= 10 && special != true){
+					return number;
+				}
+				
+				if(special === true){
+					if(number < 1000 && number >= 100){
+						return "0" + number;
+					} else{
+						if(number < 100 && number >= 10){
+							return "00" + number;
+						} else{
+							if(number < 10){
+								return "000" + number;	
+							} else{
+								return number;
+							}
+						}
+					}
+				}
+			}
+		</script>
+	</body>
+</html>
